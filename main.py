@@ -1,28 +1,15 @@
 import re
-from parser import parse_jflap_xml
+from parser import parse_jflap_dfa, parse_jflap_nfa
 
 from automaton_ops import verify_against_method, verify_against_regex
 
 if __name__ == "__main__":
-    automaton = parse_jflap_xml("")
+    automaton = parse_jflap_dfa("/mnt/c/Users/Alex/Desktop/tmp.jff")
 
     def tmp(s):
-        regex = re.compile(r"^.*baa.*$")
-        if regex.match(s):
-            return True
-
-        l = len(s)
-        for i in range(l-2):
-            if s[i] == "a":
-                if s[i+1] != "b" or s[i+2] != "b":
-                    return False
-                i += 2
-        return s[l-1] != "a" and s[l-2] != "a"
-    # print(verify_against_regex(
-    #     automaton, re.compile(r"^((?!bba).)*$"), max_sample_num=20))
-    print(verify_against_method(
-        automaton, tmp, max_sample_num=10))
-    # print(automaton.check_string_in_language("ba"))
+        return "00" not in s and len(s) >= 2 and s[0] == "1" and s[-1] == "1"
+    verify_against_method(
+        automaton, tmp, max_sample_num=40)
 
 
 # Don't match strings containing bba

@@ -5,7 +5,7 @@ from transition import Transition
 
 
 class Automaton:
-    def __init__(self, states: List[State], transitions: Dict[Transition, List[int]]) -> None:
+    def __init__(self, states: Set[State], transitions: Dict[Transition, List[int]]) -> None:
         self.initial_state: State
         self.transitions: Dict[Transition, Set[State]]
         self.transitions = dict()
@@ -77,7 +77,6 @@ class Automaton:
         if len(string) != 1:  # todo fix this if statement
             steps.append(string[start:stop])
 
-    # Gets overridden by subclasses
         return steps
 
     def check_string_in_language(self, string: str) -> bool:

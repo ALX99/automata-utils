@@ -6,7 +6,7 @@ from transition import Transition
 
 
 class DFA(Automaton):
-    def __init__(self, states: List[State], transitions: Dict[Transition, List[int]]) -> None:
+    def __init__(self, states: Set[State], transitions: Dict[Transition, List[int]]) -> None:
         super().__init__(states, transitions)
 
     def check_string_in_language(self, string: str) -> bool:

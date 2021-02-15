@@ -2,6 +2,8 @@ import random
 from typing import Callable, Pattern
 
 from automaton import Automaton
+from dfa import DFA
+from state import combine_states
 
 
 def verify_against_regex(automaton: Automaton, regex: Pattern[str],
@@ -22,16 +24,14 @@ def verify_against_regex(automaton: Automaton, regex: Pattern[str],
     for i in range(1, max_sample_num):
         print(f"\rTesting with sample size {i}", end="")
         for _ in range(test_num):
-            test_string = "".join([random.choice(symbols) for _ in range(i)])
-            if regex.match(test_string):
-                if not automaton.check_string_in_language(test_string):
-                    print(
-                        f"Regex matched on {test_string} and automaton didn't")
+            test = "".join([random.choice(symbols) for _ in range(i)])
+            if regex.match(test):
+                if not automaton.check_string_in_language(test):
+                    print(f"\nRegex matched on {test} and automaton didn't")
                     return False
             else:
-                if automaton.check_string_in_language(test_string):
-                    print(
-                        f"Regex didn't match on {test_string} and automaton did")
+                if automaton.check_string_in_language(test):
+                    print(f"\nRegex didn't match on {test} and automaton did")
                     return False
     return True
 
@@ -54,15 +54,25 @@ def verify_against_method(automaton: Automaton, func: Callable[[str], int],
     for i in range(1, max_sample_num):
         print(f"\rTesting with sample size {i}", end="")
         for _ in range(test_num):
-            test_string = "".join([random.choice(symbols) for _ in range(i)])
-            if func(test_string):
-                if not automaton.check_string_in_language(test_string):
-                    print(
-                        f"Regex matched on {test_string} and automaton didn't")
+            test = "".join([random.choice(symbols) for _ in range(i)])
+            if func(test):
+                if not automaton.check_string_in_language(test):
+                    print(f"\nMethod matched on {test} and automaton didn't")
                     return False
             else:
-                if automaton.check_string_in_language(test_string):
-                    print(
-                        f"Regex didn't match on {test_string} and automaton did")
+                if automaton.check_string_in_language(test):
+                    print(f"\nMethod didn't match on {test} and automaton did")
                     return False
     return True
+
+
+def product_construction(a1: DFA, a2: DFA) -> DFA:
+    # Make sure they operate over the same alphabet
+    if a1.alphabet.difference(a2.alphabet) != a1.alphabet:
+        raise ValueError("The alphabets of the automatons differ")
+
+    initial_state = combine_states(a1.initial_state, a2
+                                   .initial_state, a1.initial_state.final or a2.initial_state.final)
+
+    # todo not done
+    return None

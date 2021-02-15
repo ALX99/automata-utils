@@ -1,13 +1,14 @@
+"""This file contains logic to parsing stuff"""
 import xml.etree.ElementTree as ET
-from typing import Dict, List
+from typing import Dict, List, Set, Tuple
 
-from automaton import Automaton
+from dfa import DFA
 from nfa import NFA
 from state import State
 from transition import Transition
 
 
-def parse_states(root: ET.Element) -> List[State]:
+def parse_states(root: ET.Element) -> Set[State]:
     """Parses the JFLAP xml to get a dict of states
 
     Args:
@@ -16,7 +17,7 @@ def parse_states(root: ET.Element) -> List[State]:
     Returns:
         Dict[State]: A dict of all states
     """
-    _states = []
+    states = set()
 
     # Parse id, name, initial, and final
     for state in root.findall("automaton")[0].findall("state"):
@@ -25,10 +26,10 @@ def parse_states(root: ET.Element) -> List[State]:
         initial = len(state.findall("initial")) > 0
         final = len(state.findall("final")) > 0
 
-        _states.append(State(id=identifier, name=name,
-                             initial=initial, final=final))
+        states.add(State(id=identifier, name=name,
+                         initial=initial, final=final))
 
-    return _states
+    return states
 
 
 def parse_transitions(root: ET.Element) -> Dict[Transition, List[int]]:
@@ -62,9 +63,40 @@ def parse_transitions(root: ET.Element) -> Dict[Transition, List[int]]:
     return transitions_
 
 
-def parse_jflap_xml(path: str) -> Automaton:
+def parse_jflap_xml(path: str) -> Tuple[Set[State], Dict[Transition, List[int]]]:
+    """Parses a JFLAP xml file to return a set of states and transitions
+
+    Args:
+        path (str): The path to the JFLAP xml file
+
+    Returns:
+        Tuple[Set[State], Dict[Transition, List[int]]]: Tuple of states and transitions
+    """
     root = ET.parse(path).getroot()
-    states = parse_states(root)
-    transitions = parse_transitions(root)
-    # todo check if it is an dfa or nfa
+    return (parse_states(root), parse_transitions(root))
+
+
+def parse_jflap_dfa(path: str) -> DFA:
+    """Parses a JFLAP xml file and returns a DFA
+
+    Args:
+        path (str): The path to the JFLAP xml file
+
+    Returns:
+        DFA: The DFA
+    """
+    states, transitions = parse_jflap_xml(path)
+    return DFA(states, transitions)
+
+
+def parse_jflap_nfa(path: str) -> NFA:
+    """Parses a JFLAP xml file and returns a NFA
+
+    Args:
+        path (str): The path to the JFLAP xml file
+
+    Returns:
+        NFA: The NFA
+    """
+    states, transitions = parse_jflap_xml(path)
     return NFA(states, transitions)
