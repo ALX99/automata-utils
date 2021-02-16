@@ -1,7 +1,6 @@
-import re
-from parser import parse_jflap_dfa, parse_jflap_nfa
 
-from automaton_ops import verify_against_method, verify_against_regex
+from lib.automaton_ops import verify_against_method
+from lib.parser import parse_jflap_dfa
 
 if __name__ == "__main__":
     automaton = parse_jflap_dfa("/mnt/c/Users/Alex/Desktop/tmp.jff")

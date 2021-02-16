@@ -1,13 +1,10 @@
-from typing import Dict, Iterable, List, Set
+"""Module containing the DFA class"""
 
-from automaton import Automaton
-from state import State
-from transition import Transition
+from lib.automaton import Automaton
 
 
 class DFA(Automaton):
-    def __init__(self, states: Set[State], transitions: Dict[Transition, List[int]]) -> None:
-        super().__init__(states, transitions)
+    """Class represeting an NFA"""
 
     def check_string_in_language(self, string: str) -> bool:
         """Check if a string is inside the language this DFA

@@ -1,11 +1,11 @@
-"""This file contains logic to parsing stuff"""
+"""This module contains logic to parsing stuff"""
 import xml.etree.ElementTree as ET
 from typing import Dict, List, Set, Tuple
 
-from dfa import DFA
-from nfa import NFA
-from state import State
-from transition import Transition
+from lib.dfa import DFA
+from lib.nfa import NFA
+from lib.state import State
+from lib.transition import Transition
 
 
 def parse_states(root: ET.Element) -> Set[State]:

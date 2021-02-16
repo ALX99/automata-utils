@@ -1,12 +1,14 @@
-import pprint
+"""Module containing the NFA class"""
 from typing import Dict, Iterable, List, Set
 
-from automaton import Automaton
-from state import State
-from transition import Transition
+from lib.automaton import Automaton
+from lib.state import State
+from lib.transition import Transition
 
 
 class NFA(Automaton):
+    """Class represeting an NFA"""
+
     def __init__(self, states: Set[State], transitions: Dict[Transition, List[int]]) -> None:
         super().__init__(states, transitions)
         self.nfa_transition_table: Dict[str, List[str]]

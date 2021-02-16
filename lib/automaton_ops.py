@@ -1,9 +1,10 @@
+"""This module contains operations on automatons"""
 import random
 from typing import Callable, Pattern
 
-from automaton import Automaton
-from dfa import DFA
-from state import combine_states
+from lib.automaton import Automaton
+from lib.dfa import DFA
+from lib.state import combine_states
 
 
 def verify_against_regex(automaton: Automaton, regex: Pattern[str],
@@ -66,13 +67,13 @@ def verify_against_method(automaton: Automaton, func: Callable[[str], int],
     return True
 
 
-def product_construction(a1: DFA, a2: DFA) -> DFA:
+def product_construction(dfa1: DFA, dfa2: DFA) -> DFA:
     # Make sure they operate over the same alphabet
-    if a1.alphabet.difference(a2.alphabet) != a1.alphabet:
+    if dfa1.alphabet.difference(dfa2.alphabet) != dfa1.alphabet:
         raise ValueError("The alphabets of the automatons differ")
 
-    initial_state = combine_states(a1.initial_state, a2
-                                   .initial_state, a1.initial_state.final or a2.initial_state.final)
+    initial_state = combine_states(dfa1.initial_state, dfa2
+                                   .initial_state, dfa1.initial_state.final or dfa2.initial_state.final)
 
     # todo not done
     return None

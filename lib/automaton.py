@@ -1,10 +1,14 @@
+"""Module that contains common logic to automatons"""
+import sys
 from typing import Dict, Iterable, List, Optional, Set
 
-from state import State
-from transition import Transition
+from lib.state import State
+from lib.transition import Transition
 
 
 class Automaton:
+    """Class representing an automaton"""
+
     def __init__(self, states: Set[State], transitions: Dict[Transition, List[int]]) -> None:
         self.initial_state: State
         self.transitions: Dict[Transition, Set[State]]
@@ -20,7 +24,7 @@ class Automaton:
                 self.initial_state = state
         if self.initial_state is None:
             print("No initial state found")
-            exit(1)
+            sys.exit(1)
 
         for transition, dests in transitions.items():
             # Get all transitions
@@ -49,7 +53,7 @@ class Automaton:
         """
         if not all(id in self.states for id in ids):
             print("Missing states in automaton")
-            exit(1)
+            sys.exit(1)
 
     def _get_symbols(self, string: str) -> List[str]:
         """Returns the symbols from a string in the right order
@@ -79,11 +83,13 @@ class Automaton:
 
         return steps
 
-    def check_string_in_language(self, string: str) -> bool:
+    # This method is implemented in DFA and NFA and only
+    # serves # as a placeholder here
+    def check_string_in_language(self, _: str) -> bool:
         """Check if a string is inside the language this DFA/NFA
 
         Args:
-            string (str): The string to check
+            _ (str): The string to check
 
         Returns:
             bool: True if the string is inside the language
