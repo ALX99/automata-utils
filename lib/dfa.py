@@ -1,10 +1,20 @@
 """Module containing the DFA class"""
 
+from typing import Optional
+
 from lib.automaton import Automaton
+from lib.state import State
+from lib.transition import Transition
 
 
 class DFA(Automaton):
     """Class represeting an NFA"""
+
+    def get_transition(self, state_id: int, symbol: str) -> Optional[State]:
+        state = super().get_transition(state_id, symbol)
+        if state is None:
+            return None
+        return state.copy().pop()
 
     def check_string_in_language(self, string: str) -> bool:
         """Check if a string is inside the language this DFA
@@ -15,18 +25,26 @@ class DFA(Automaton):
         Returns:
             bool: True if the string is inside the language
         """
-        steps = super()._get_symbols(string)
+        symbols = super()._get_symbols(string)
         current_state = self.initial_state
 
         # Calculate for all steps
-        for step in steps:
-            # Get transitions from state "state.id" and symbol "symbol"
-            current_state = super().get_transition(current_state.id, step)
-            # DFA has died here
-            if current_state is None or len(current_state) == 0:
+        for symbol in symbols:
+            current_state = self.get_transition(current_state.id, symbol)
+            if current_state is None:
                 return False
-            # This is ok since a DFA should only contain transition
-            # to at most one other state
-            current_state = current_state.copy().pop()
 
         return current_state.final
+
+    def check_complete(self) -> bool:
+        """Check that the DFA does not have missing transitions
+
+        Returns:
+            bool: True if the DFA has no missing transitions
+        """
+        for state in self.states:
+            for symbol in self.alphabet:
+                if self.get_transition(state, symbol) is None:
+                    return False
+
+        return True
