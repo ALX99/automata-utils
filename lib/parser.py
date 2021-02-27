@@ -2,6 +2,7 @@
 import xml.etree.ElementTree as ET
 from typing import Dict, List, Set, Tuple
 
+from lib.cfg import CFG, Productions
 from lib.dfa import DFA
 from lib.nfa import NFA
 from lib.state import State
@@ -63,7 +64,8 @@ def parse_transitions(root: ET.Element) -> Dict[Transition, List[int]]:
     return transitions_
 
 
-def parse_jflap_xml(path: str) -> Tuple[Set[State], Dict[Transition, List[int]]]:
+def parse_jflap_xml(path: str) -> Tuple[Set[State],
+                                        Dict[Transition, List[int]]]:
     """Parses a JFLAP xml file to return a set of states and transitions
 
     Args:
@@ -100,3 +102,21 @@ def parse_jflap_nfa(path: str) -> NFA:
     """
     states, transitions = parse_jflap_xml(path)
     return NFA(states, transitions)
+
+
+def parse_cfg(path: str) -> CFG:
+    with open(path) as f:
+        lines = f.read().splitlines()
+
+    # Can not contain productions like
+    # A -> b
+    # A -> c
+    # It has to be in the form
+    # A -> b | c
+    productions = Productions()
+    for line in lines:
+        l1 = line.split("->")
+        for l in l1[1].split("|"):
+            productions.add_production(l1[0].strip(), l.strip())
+
+    return CFG(productions)

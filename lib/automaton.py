@@ -14,7 +14,7 @@ class Automaton:
         self.transitions: Dict[Transition, Set[State]]
         self.transitions = dict()
         self.alphabet = set()
-
+    
         # We'll convert to a dict here for faster lookup
         self.states = {state.id: state for state in states}
 
@@ -78,7 +78,7 @@ class Automaton:
             stop += 1
 
         # Add the last substring
-        if len(string) != 1:  # todo fix this if statement
+        if len(string) != 1:
             steps.append(string[start:stop])
 
         return steps
