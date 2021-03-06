@@ -1,7 +1,8 @@
 """This module contains operations on automatons"""
 import random
-import string
-from typing import Callable, Dict, List, Pattern, Set, Tuple
+import re
+import itertools
+from typing import Callable, Dict,  Pattern
 
 from tabulate import PRESERVE_WHITESPACE, tabulate
 
@@ -104,7 +105,8 @@ def create_distinguishability_table(dfa: DFA, show_table: bool = False,
                 for symbol in dfa.alphabet:
                     id1_new = dfa.get_transition(id1, symbol).id
                     id2_new = dfa.get_transition(id2, symbol).id
-                    if dict_table.get(id1_new).get(id2_new) == "X" or dict_table.get(id2_new).get(id1_new):
+                    if dict_table.get(id1_new).get(id2_new) == "X" or dict_table.get(id2_new).get(
+                            id1_new):
                         dict_table[id1][id2] = "X"
                         found = True
 
@@ -128,8 +130,8 @@ def product_construction(dfa1: DFA, dfa2: DFA) -> DFA:
     if dfa1.alphabet.difference(dfa2.alphabet) != dfa1.alphabet:
         raise ValueError("The alphabets of the automatons differ")
 
-    initial_state = combine_states(
-        dfa1.initial_state, dfa2 .initial_state, dfa1.initial_state.final or dfa2.initial_state.final)
+    initial_state = combine_states(dfa1.initial_state, dfa2 .initial_state,
+                                   dfa1.initial_state.final or dfa2.initial_state.final)
 
     # todo not done
     return None
@@ -138,17 +140,15 @@ def product_construction(dfa1: DFA, dfa2: DFA) -> DFA:
 def convert_to_chomsky(cfg: CFG, show_steps=False) -> CFG:
     if show_steps:
         print("Entering the bin method")
-    show_steps = False
-    no_bin_CFG = bin(cfg, show_steps)
-    print(no_bin_CFG)
+    no_del_CFG = dell(cfg, show_steps)
+    # no_bin_CFG = bin(cfg, show_steps)
+    # print(no_del_CFG)
 
 
 def bin(cfg: CFG, show_steps: bool) -> CFG:
-    productions = cfg.get_productions()
     variables = cfg.get_variables()
-
     new_productions = Productions()
-    for head, tail in productions.items():
+    for head, tail in cfg.get_productions().items():
         i = 0
         while i < len(tail):
             if len(tail[i]) <= 2:
@@ -160,24 +160,24 @@ def bin(cfg: CFG, show_steps: bool) -> CFG:
 
             if show_steps:
                 print(f"{head} -> {tail[i]} is too large")
-            var = head
-            j = 0
-            new_var = "A"
 
+            new_head = head
+            new_var = "A"
             # When this loop finishes there will be 2
             # variables (or terminals) left
+            j = 0
             while j < len(tail[i])-2:
                 # Find a new variable that already isn't in variables
                 while new_var in variables:
                     new_var = chr((ord(new_var)+1-65) % 26+65)
                 new_tail = tail[i][j] + new_var
                 if show_steps:
-                    print(f"Creating a new production {var} -> {new_tail}")
-                new_productions.add_production(var, new_tail)
+                    print(f"Creating a new production {new_head} -> {new_tail}")
+                new_productions.add_production(new_head, new_tail)
 
                 variables.add(new_var)
                 # Set the new variable to the old variable
-                var = new_var
+                new_head = new_var
                 j += 1
 
             # Get last two variables (or terminals) from the tail
@@ -190,5 +190,45 @@ def bin(cfg: CFG, show_steps: bool) -> CFG:
     return CFG(new_productions)
 
 
-def dell():
-    pass
+def dell(cfg: CFG, show_steps: bool) -> CFG:
+    new_cfg = CFG(cfg.get_productions())
+    # Set of nullable variables
+    nullables = set()
+
+    # Find all variables that are nullable in one step
+    for head, tails in cfg.get_productions().items():
+        for tail in tails:
+            if tail == "!":
+                if show_steps:
+                    print(f"{head} -> {tail} is a nullable symbol")
+                nullables.add(head)
+
+    for nullable in nullables:
+        new_cfg.remove_production(nullable, "!")
+        for head, tails in new_cfg.get_productions().items():
+            new_tails = tails.copy()
+            for tail in tails:
+                # Check if tail contains nullable symbol
+                if tail.count(nullable) > 0:
+                    if show_steps:
+                        print(f"{head} -> {tail} contains nullabe symbols")
+
+                        # Find all indexes
+                    indexes = [m.start() for m in re.finditer(nullable, tail)]
+                    # Get all combinations
+                    for L in range(1, len(indexes)+1):
+                        for subset in itertools.combinations(indexes, L):
+                            listy = list(subset)
+                            listy.sort()
+                            new_tail = tail
+                            for i, pos in enumerate(listy):
+                                new_tail = new_tail[:pos-i]+new_tail[pos-i+1:]
+                            if show_steps:
+                                print(f"Adding {head} -> {new_tail}")
+                            new_tails.append(new_tail)
+
+            # Add the new tails found
+            for new_tail in set(new_tails).difference(tails):
+                tails.append(new_tail)
+
+    return new_cfg

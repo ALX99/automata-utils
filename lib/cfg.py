@@ -26,6 +26,11 @@ class Productions:
     def items(self) -> ItemsView[str, List[str]]:
         return self._productions.items()
 
+    def remove_production(self, head: str, tail: str) -> None:
+        self._productions[head].remove(tail)
+        if len(self._productions[head]) == 0:
+            del self._productions[head]
+
     def __iter__(self) -> Iterator[str]:
         return self._productions.__iter__()
 
@@ -57,6 +62,12 @@ class CFG:
 
     def get_variables(self) -> Set[str]:
         return self._variables.copy()
+
+    def add_production(self, head: str, tail: str) -> None:
+        self._productions.add_production(head, tail)
+
+    def remove_production(self, head: str, tail: str) -> None:
+        self._productions.remove_production(head, tail)
 
     def __repr__(self) -> str:
         return str(self._productions)
