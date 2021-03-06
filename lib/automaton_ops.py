@@ -138,9 +138,7 @@ def product_construction(dfa1: DFA, dfa2: DFA) -> DFA:
 
 
 def convert_to_chomsky(cfg: CFG, show_steps=False) -> CFG:
-    if show_steps:
-        print("Entering the bin method")
-    no_del_CFG = dell(cfg, show_steps)
+    unit(cfg, show_steps)
     # no_bin_CFG = bin(cfg, show_steps)
     # print(no_del_CFG)
 
@@ -187,11 +185,11 @@ def bin(cfg: CFG, show_steps: bool) -> CFG:
             new_productions.add_production(new_var, new_tail)
             i += 1
 
-    return CFG(new_productions)
+    return CFG(cfg.get_start_state(), new_productions)
 
 
 def dell(cfg: CFG, show_steps: bool) -> CFG:
-    new_cfg = CFG(cfg.get_productions())
+    new_cfg = CFG(cfg.get_start_state(), cfg.get_productions())
     # Set of nullable variables
     nullables = set()
 
@@ -205,7 +203,7 @@ def dell(cfg: CFG, show_steps: bool) -> CFG:
 
     for nullable in nullables:
         new_cfg.remove_production(nullable, "!")
-        for head, tails in new_cfg.get_productions().items():
+        for head, tails in new_cfg.get_dict_productions_raw().items():
             new_tails = tails.copy()
             for tail in tails:
                 # Check if tail contains nullable symbol
@@ -213,7 +211,7 @@ def dell(cfg: CFG, show_steps: bool) -> CFG:
                     if show_steps:
                         print(f"{head} -> {tail} contains nullabe symbols")
 
-                        # Find all indexes
+                    # Find all indexes
                     indexes = [m.start() for m in re.finditer(nullable, tail)]
                     # Get all combinations
                     for L in range(1, len(indexes)+1):
@@ -231,4 +229,38 @@ def dell(cfg: CFG, show_steps: bool) -> CFG:
             for new_tail in set(new_tails).difference(tails):
                 tails.append(new_tail)
 
+    return new_cfg
+
+
+def unit(cfg: CFG, show_steps: bool) -> CFG:
+    productions = cfg.get_productions()
+    new_cfg = CFG(cfg.get_start_state(), cfg.get_productions())
+
+    while True:
+        # Find unit pairs
+        unit_pairs = set()
+        for head, tails in new_cfg.get_productions().items():
+            for tail in tails:
+                if tail in productions:
+                    unit_pairs.add((head, tail))
+
+        # Break when can't find any more unit pairs
+        if len(unit_pairs) == 0:
+            break
+
+        for pair in unit_pairs:
+            head, tt = pair
+            new_tails = []
+            # Remove the unit pair
+            new_cfg.get_dict_productions_raw()[head].remove(tt)
+            if show_steps:
+                print(f"Removing unit pair {head} -> {tt}")
+
+            for tail in new_cfg.get_dict_productions_raw()[tt]:
+                new_tails.append(tail)
+            for new_tail in new_tails:
+                if show_steps:
+                    print(f"Adding {head} -> {new_tail} since we had that {tt} -> {new_tail}")
+                new_cfg.add_production(head, new_tail)
+    # new_cfg.remove_unreachable_productions()
     return new_cfg

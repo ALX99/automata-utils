@@ -113,10 +113,33 @@ def parse_cfg(path: str) -> CFG:
     # A -> c
     # It has to be in the form
     # A -> b | c
+    start = None
     productions = Productions()
     for line in lines:
         l1 = line.split("->")
+        head = l1[0].strip()
         for l in l1[1].split("|"):
-            productions.add_production(l1[0].strip(), l.strip())
+            productions.add_production(head, l.strip())
+        if start is None:
+            start = head
+    assert start is not None
+    return CFG(start, productions)
 
-    return CFG(productions)
+
+def parse_cfg_string(string: str) -> CFG:
+    # Can not contain productions like
+    # A -> b
+    # A -> c
+    # It has to be in the form
+    # A -> b | c
+    start = None
+    productions = Productions()
+    for line in string.split("\n"):
+        l1 = line.split("->")
+        head = l1[0].strip()
+        for l in l1[1].split("|"):
+            productions.add_production(head, l.strip())
+        if start is None:
+            start = head
+    assert start is not None
+    return CFG(start, productions)
