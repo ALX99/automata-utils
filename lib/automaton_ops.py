@@ -2,7 +2,7 @@
 import random
 import re
 import itertools
-from typing import Callable, Dict,  Pattern
+from typing import Callable, Dict,  Pattern, Set
 
 from tabulate import PRESERVE_WHITESPACE, tabulate
 
@@ -137,6 +137,14 @@ def product_construction(dfa1: DFA, dfa2: DFA) -> DFA:
     return None
 
 
+def gen_new_variabele(variables: Set[str]) -> str:
+    new_var = "A"
+    # Get new variable
+    while new_var in variables:
+        new_var = chr((ord(new_var)+1-65) % 26+65)
+    return new_var
+
+
 def convert_to_chomsky(cfg: CFG, show_steps=False) -> CFG:
     prod = cfg.get_productions()
     prod.add_production("P", cfg.get_start_state())
@@ -180,14 +188,12 @@ def bin(cfg: CFG, show_steps: bool) -> CFG:
                 print(f"{head} -> {tail[i]} is too large")
 
             new_head = head
-            new_var = "A"
             # When this loop finishes there will be 2
             # variables (or terminals) left
             j = 0
             while j < len(tail[i])-2:
                 # Find a new variable that already isn't in variables
-                while new_var in variables:
-                    new_var = chr((ord(new_var)+1-65) % 26+65)
+                new_var = gen_new_variabele(variables)
                 new_tail = tail[i][j] + new_var
                 if show_steps:
                     print(f"Creating a new production {new_head} -> {new_tail}")
@@ -297,11 +303,9 @@ def term(cfg: CFG, show_steps: bool) -> CFG:
                 continue
             terminals = {char for char in tail if char not in productions}
             new_tail = tail
-            new_var = "A"
             for terminal in terminals:
                 # Get new variable
-                while new_var in variables:
-                    new_var = chr((ord(new_var)+1-65) % 26+65)
+                new_var = gen_new_variabele(variables)
                 # Add nwe variable
                 new_productions.add_production(new_var, terminal)
                 variables.add(new_var)
