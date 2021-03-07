@@ -138,9 +138,29 @@ def product_construction(dfa1: DFA, dfa2: DFA) -> DFA:
 
 
 def convert_to_chomsky(cfg: CFG, show_steps=False) -> CFG:
-    unit(cfg, show_steps)
-    # no_bin_CFG = bin(cfg, show_steps)
-    # print(no_del_CFG)
+    prod = cfg.get_productions()
+    prod.add_production("P", cfg.get_start_state())
+    new = CFG("P'", prod)
+
+    a = bin(cfg, show_steps)
+    print("== Done with bin ==")
+    print(a)
+    print("===================")
+
+    b = dell(a, show_steps)
+    print("== Done with del ==")
+    print(b)
+    print("===================")
+
+    c = unit(b, show_steps)
+    print("== Done with unit ==")
+    print(c)
+    print("====================")
+
+    d = term(c, show_steps)
+    print("== Done with term ==")
+    print(d)
+    print("====================")
 
 
 def bin(cfg: CFG, show_steps: bool) -> CFG:
@@ -264,3 +284,30 @@ def unit(cfg: CFG, show_steps: bool) -> CFG:
                 new_cfg.add_production(head, new_tail)
     # new_cfg.remove_unreachable_productions()
     return new_cfg
+
+
+def term(cfg: CFG, show_steps: bool) -> CFG:
+    productions = cfg.get_productions()
+    variables = cfg.get_variables()
+    new_productions = Productions()
+    for head, tails in productions.items():
+        for tail in tails:
+            if len(tail) < 2 or not any([char in productions for char in tail]):
+                new_productions.add_production(head, tail)
+                continue
+            terminals = {char for char in tail if char not in productions}
+            new_tail = tail
+            new_var = "A"
+            for terminal in terminals:
+                # Get new variable
+                while new_var in variables:
+                    new_var = chr((ord(new_var)+1-65) % 26+65)
+                # Add nwe variable
+                new_productions.add_production(new_var, terminal)
+                variables.add(new_var)
+                # Replace the terminal in the tail with a variable
+                new_tail = new_tail.replace(terminal, new_var)
+            # Finally add the new tail
+            new_productions.add_production(head, new_tail)
+
+    return CFG(cfg.get_start_state(), new_productions)
